@@ -1,0 +1,84 @@
+#!/bin/bash
+
+#Default screen resolution 800x600
+if [ ! -f ~/.Xscreen ]; then
+	SCREEN_SIZE="800x600"
+else
+   	SCREEN_SIZE=$(head -n 1 ~/.Xscreen)
+fi
+
+#Default Display 10
+DISPLAY=10
+
+
+#Verify if the user defined another screen resolution
+FLAG=0
+while getopts ":s:d:h-:" opt; do
+  case $opt in
+    s)
+      echo -e "\n-----------------------------------------------"
+      echo "Configuring the screen resolution -> $OPTARG"
+      echo -e "-----------------------------------------------\n"
+      NEW_SCREEN_SIZE=$OPTARG
+      
+      if [ "$SCREEN_SIZE" != "$NEW_SCREEN_SIZE" ]; then
+        FLAG=1
+	SCREEN_SIZE=$NEW_SCREEN_SIZE
+      fi
+      ;;
+    d)
+      echo -e "\n-----------------------------------------------"
+      echo "Configuring the session number -> $OPTARG "
+      echo -e "-----------------------------------------------\n"
+      DISPLAY=$OPTARG
+      ;;
+    h)
+      echo -e "\n-----------------------------------------------------------"
+      echo -e "Usage: docker-desktop [-s screen_size] [-d session_number]"
+      echo -e "-s : screen resolution (Default = 800x600" 
+      echo -e "-d : session number (Default = 10)"
+      echo -e "-h : help"
+      echo -e "-----------------------------------------------------------\n"
+      exit 1
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+#Saving the screen configuration 
+echo $SCREEN_SIZE > ~/.Xscreen
+
+# Start the xpra session, if it's not running and attach to it.
+PROCESS_NUM=$(ps -ef | grep "xpra" | grep -v "grep" | wc -l)
+if [ $PROCESS_NUM -eq 0 ] || [ $FLAG  ]; then
+        # Start xpra session
+	DISPLAY_1=$(( $DISPLAY + 1 ))
+
+        # ssh accessible ROOTLESS 
+	#xpra start :$DISPLAY --no-pulseaudio --start-child="mrxvt" --no-mdns ; sleep 5 ; DISPLAY=:${DISPLAY} xpad &
+	# ssh may have issues (on OSX?) with VPN configurations, and SSH is not necessary over the encrypted tunnel
+	# make sure to set a pass in ~/.xprapass
+	xpra start :$DISPLAY --no-pulseaudio --start-child="mrxvt" --no-mdns --bind-tcp=0.0.0.0:9099 --password-file=/home/docker/.xprapass ; sleep 5 ; DISPLAY=:${DISPLAY} xpad &
+	
+	# make ssh accessible ROOTED desktop 
+	#xpra start :${DISPLAY} & sleep 5; xpra stop :$DISPLAY & sleep 5; 
+	#xpra start :$DISPLAY --start-child="Xephyr -ac -screen $SCREEN_SIZE -query localhost -host-cursor -reset -terminate :$DISPLAY_1" 
+	echo -e "\n----------------"
+	echo -e "Session started!"
+	echo -e "----------------\n"
+	echo -e "\n--------------------------------------------------------------------------------"
+	echo -e "Please press Control-C if you are running it directly from the ssh command line."
+	echo -e "--------------------------------------------------------------------------------\n"
+else
+        echo -e "------------------------\n"
+        echo -e "Session already running!\n"
+        echo -e "------------------------\n"
+fi
+
