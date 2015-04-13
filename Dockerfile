@@ -59,7 +59,10 @@ RUN if [ "$(md5sum smartgit-generic-6_5_7.tar.gz|awk '{print $1}')" = "02b7216dd
 RUN wget http://mirrors.ibiblio.org/pub/mirrors/eclipse/technology/epp/downloads/release/kepler/SR2/eclipse-standard-kepler-SR2-linux-gtk-x86_64.tar.gz
 RUN if [ "$(sha512sum eclipse-standard-kepler-SR2-linux-gtk-x86_64.tar.gz|awk '{print $1}')" = "38d53d51a9d8d2fee70c03a3ca0efd1ca80d090270d41d6f6c7d8e66b118d7e5c393c78ed5c7033a2273e10ba152fa8eaf31832e948e592a295a5b6e7f1de48f" ]; then test -d /opt || mkdir /opt && mv eclipse-standard-kepler-SR2-linux-gtk-x86_64.tar.gz /opt && cd /opt && tar -xpzvf eclipse-standard-kepler-SR2-linux-gtk-x86_64.tar.gz ; fi
 # liclipse update dl
-RUN  wget https://googledrive.com/host/0BwwQN8QrgsRpLVlDeHRNemw3S1E
+RUN wget https://googledrive.com/host/0BwwQN8QrgsRpLVlDeHRNemw3S1E/LiClipse%201.4.0/UPDATE%20SITE%201.4.0.zip \
+     && mv UPDATE\ SITE\ 1.4.0.zip  liclipse-UPDATE-SITE-1.4.0.zip \
+RUN test -d /opt/eclipse/dropins || mkdir -v /opt/eclipse/dropins
+RUN if [ "$(md5sum liclipse-UPDATE-SITE-1.4.0.zip |awk '{print $1}')" = "42b470979959bdf0b6784e9e732f27ce" ]; then mv  liclipse-UPDATE-SITE-1.4.0.zip /opt/eclipse/dropins && cd /opt/eclipse/dropins && unzip  liclipse-UPDATE-SITE-1.4.0.zip; fi
 
 
 RUN add-apt-repository -y ppa:ubuntu-wine/ppa \
