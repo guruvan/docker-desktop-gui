@@ -1,6 +1,7 @@
 # Changelog
-## New
+## 1.0 - guruvan@maza.club 
  + add full dev desktop. No longer lightweight
+ + break project into 2 projects, docker-desktop-gui docker-desktop
  + 
  + take out libre office stuff 
 
