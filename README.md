@@ -5,43 +5,21 @@ This project provides
  * Text workstation base for developers
  * GUI Workstation based on Text workstation
 
-##Availability
- * Automated Builds on Dockerhub:
-   - [guruvan/desktop-base](https://registry.hub.docker.com/u/guruvan/desktop-base)
-   - [guruvan/desktop-gui](https://registry.hub.docker.com/u/guruvan/desktop-gui)
-
-Default Dockerfile builds desktop-base (text) 
-   ```
-   git clone https://github.com/guruvan/docker-desktop
-   cd docker-desktop
-   docker build -f Dockerfile -t username/desktop-base \
-     && docker build -f Dockerfile.gui -t username/desktop-gui
-   ```
-
-##Quick Start
-
- This example uses TCP connection which is avilable in ./docker-desktop by default, for use over VPN
-  - see below for commandline ssh connection
-
- On application server
-   ```
-   docker pull guruvan/desktop-gui
-   docker run -d --name username_desktop -p 1337:22 -p 9001:9000  guruvan/desktop-base
-   docker-enter username_desktop
-   su - docker
-   echo "your_sekrit_passwd" > ~/.xprapass
-   ./docker-desktop -d 10
-   ```
- On local display server, use Xpra Launcher app to connect to port 9000 of that host
- with the password you set above
-
-
 ##Description
 
 This Dockerfile creates a docker image and once it's executed it creates a container that runs X11 and SSH services.
-The ssh is used to forward X11 and provide you encrypted data communication between the docker container and your local machine.
+SSH is available to connect the included Xpra server to setup X Windows sessions.
 
-Xpra allows to display the applications running inside of the container such as Firefox, eclipse, smartgit, xterm, etc. with recovery connection capabilities. Xpra also uses a custom protocol that is self-tuning and relatively latency-insensitive, and thus is usable over worse links than standard X.
+Xpra "is like screen for X" 
+  - Xpra + Xorg or Xpra+Xvfb provide Xwindows environment inside the container 
+  - Xpra allows for connections, similar to VNC, but provides a rootless window
+  - Xpra client provides local Xwindows server for diplay of apps
+  - ** Xpra provides detach/reattach capabilities for the Xwindows session **
+  - Xpra also uses a custom protocol that is self-tuning and relatively latency-insensitive, and thus is usable over worse links than standard X.
+  - Xpra allows connection via SSH or simple TCP or TCP+AES encryption
+    - This image uses TCP only, by default, and presumes the use of encrypted VPN
+
+** The client machine needs to have a X11 server installed (Xpra). See the "Notes" below. **
 
 The applications are served rootless, so the client machine manages the windows that are displayed.
 
@@ -76,21 +54,30 @@ Default is to setup connections over TCP to enhance OSX connections via VPN
    - wine1.7
 
 
+##Availability
+ * Automated Builds on Dockerhub:
+   - [guruvan/desktop-base](https://registry.hub.docker.com/u/guruvan/desktop-base)
+   - [guruvan/desktop-gui](https://registry.hub.docker.com/u/guruvan/desktop-gui)
 
-The client machine needs to have a X11 server installed (Xpra). See the "Notes" below. 
+
+##Quick Start
+
+ This example uses TCP connection which is avilable in ./docker-desktop by default, for use over VPN
+  - see below for commandline ssh connection
+
+ On application server
+   ```
+   docker pull guruvan/desktop-gui
+   docker run -d --name username_desktop -p 1337:22 -p 9001:9000  guruvan/desktop-base
+   docker-enter username_desktop
+   su - docker
+   echo "your_sekrit_passwd" > ~/.xprapass
+   ./docker-desktop -d 10
+   ```
+ On local display server, use Xpra Launcher app to connect to port 9000 of that host
+ with the password you set above
 
 
-###Building the docker image
-
-```
-$ docker build -t [username]/docker-desktop git://github.com/guruvan/docker-desktop.git
-
-OR
-
-$ git clone https://github.com/guruvan/docker-desktop.git
-$ cd docker-desktop
-$ docker build -t [username]/docker-desktop .
-```
 
 ###Running the docker image created (-d: detached mode, -P: expose the port 22 on the host machine)
 
